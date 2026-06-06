@@ -47,4 +47,29 @@ class SettingsRepository(context: Context) {
     fun setBudgetLimit(limit: Double) {
         prefs.edit().putFloat("budget_limit", limit.toFloat()).apply()
     }
+
+    // --- Challenges & Streaks Persistent State ---
+    fun joinChallenge(id: String, joinedAt: Long) {
+        prefs.edit().putLong("challenge_join_$id", joinedAt).apply()
+    }
+
+    fun getChallengeJoinDate(id: String): Long {
+        return prefs.getLong("challenge_join_$id", 0L)
+    }
+
+    fun setChallengeCompleted(id: String, completed: Boolean) {
+        prefs.edit().putBoolean("challenge_done_$id", completed).apply()
+    }
+
+    fun isChallengeCompleted(id: String): Boolean {
+        return prefs.getBoolean("challenge_done_$id", false)
+    }
+
+    fun getChallengeProgress(id: String): Int {
+        return prefs.getInt("challenge_progress_$id", 0)
+    }
+
+    fun setChallengeProgress(id: String, progress: Int) {
+        prefs.edit().putInt("challenge_progress_$id", progress).apply()
+    }
 }

@@ -153,6 +153,11 @@ fun TrackerTab(viewModel: FinanceViewModel) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Daily Streak and challenges card
+        item {
+            ChallengesCard(viewModel)
+        }
+
         // Budget warnings and Goals Summary Card
         item {
             if (budgetLimit > 0.0) {
@@ -381,11 +386,33 @@ fun TrackerTab(viewModel: FinanceViewModel) {
                             )
                             amountStr = ""
                             note = ""
-                            Toast.makeText(
-                                context,
-                                if (appLanguage == AppLanguage.BN) "লেনদেন সফলভাবে যোগ করা হয়েছে!" else "Transaction added successfully!",
-                                Toast.LENGTH_SHORT
-                            ).show()
+
+                            val feedbackMsg = if (txType == "EXPENSE") {
+                                if (appLanguage == AppLanguage.BN) {
+                                    val items = listOf(
+                                        "খরচ যোগ হয়েছে ✅",
+                                        "আজ একটু সাবধানে খরচ করুন 😅",
+                                        "ভালো! হিসাব রাখা চালিয়ে যান 🔥",
+                                        "আজকের budget limit খেয়াল রাখুন!"
+                                    )
+                                    items.random()
+                                } else {
+                                    val items = listOf(
+                                        "Expense added successfully! ✅",
+                                        "Spend a bit carefully today! 😅",
+                                        "Great! Keep tracking your spending. 🔥",
+                                        "Keep an eye on today's budget limit!"
+                                    )
+                                    items.random()
+                                }
+                            } else {
+                                if (appLanguage == AppLanguage.BN) {
+                                    "আয় যুক্ত হয়েছে! চমৎকার! 💰"
+                                } else {
+                                    "Income logged! Fantastic! 💰"
+                                }
+                            }
+                            Toast.makeText(context, feedbackMsg, Toast.LENGTH_SHORT).show()
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -518,6 +545,7 @@ fun HistoryTab(viewModel: FinanceViewModel) {
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedMonth by remember { mutableStateOf("ALL") } // Month filter, formatted in Locale or ALL
+    var historyMode by remember { mutableStateOf("LIST") } // LIST, CALENDAR, or YEARLY
 
     val filteredList = remember(transactions, searchQuery, selectedMonth) {
         transactions.filter { tx ->
@@ -559,167 +587,217 @@ fun HistoryTab(viewModel: FinanceViewModel) {
         list
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Monthly Metrics Overview Header Card
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .glassBorder(themeMode, RoundedCornerShape(20.dp)),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isGlass) Color(0x3B0F172A) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        text = Localizer.t("REPORT_SUMMARY_HEADER", appLanguage),
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(Localizer.t("TOTAL_INCOME", appLanguage), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-                            Text("৳${formatBDT(incomeSum)}", fontWeight = FontWeight.Bold, color = IncomeGreen, fontSize = 15.sp)
-                        }
-                        Column {
-                            Text(Localizer.t("TOTAL_EXPENSE", appLanguage), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-                            Text("৳${formatBDT(expenseSum)}", fontWeight = FontWeight.Bold, color = ExpenseRed, fontSize = 15.sp)
-                        }
-                        Column {
-                            Text(Localizer.t("NET_BALANCE", appLanguage), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-                            Text("৳${formatBDT(netBalance)}", fontWeight = FontWeight.Bold, color = if (netBalance >= 0) IncomeGreen else ExpenseRed, fontSize = 15.sp)
-                        }
-                    }
-                }
-            }
-        }
-
-        // Filters section: Search note + Dropdown month selector
-        item {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = { Text(Localizer.t("REPORT_SEARCH_PLACEHOLDER", appLanguage), fontSize = 13.sp) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Mode Selector Tab Bar
+        TabRow(
+            selectedTabIndex = when(historyMode) {
+                "LIST" -> 0
+                "CALENDAR" -> 1
+                else -> 2
+            },
+            containerColor = if (isGlass) Color(0xFF1E293B) else MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary
+        ) {
+            Tab(
+                selected = historyMode == "LIST",
+                onClick = { historyMode = "LIST" },
+                text = { Text(if (appLanguage == AppLanguage.BN) "ইতিহাস তালিকা" else "History List", fontWeight = FontWeight.Bold, fontSize = 11.sp) }
+            )
+            Tab(
+                selected = historyMode == "CALENDAR",
+                onClick = { historyMode = "CALENDAR" },
+                text = { Text(if (appLanguage == AppLanguage.BN) "ক্যালেন্ডার ভিউ" else "Calendar View", fontWeight = FontWeight.Bold, fontSize = 11.sp) }
+            )
+            Tab(
+                selected = historyMode == "YEARLY",
+                onClick = { historyMode = "YEARLY" },
+                text = { Text(if (appLanguage == AppLanguage.BN) "বার্ষিক হিসাব" else "Yearly Stats", fontWeight = FontWeight.Bold, fontSize = 11.sp) }
             )
         }
 
-        // Distinct Month filter selector chips
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                // ALL option
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (selectedMonth == "ALL") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                        .clickable { selectedMonth = "ALL" }
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = if (appLanguage == AppLanguage.BN) "সব সময়" else "All Time",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (selectedMonth == "ALL") Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+        Box(modifier = Modifier.weight(1f)) {
+            when (historyMode) {
+                "CALENDAR" -> {
+                    CalendarView(viewModel)
                 }
-
-                distinctMonths.forEach { m ->
-                    val isSel = selectedMonth == m
-                    Box(
+                "YEARLY" -> {
+                    YearlyDashboard(viewModel)
+                }
+                else -> {
+                    LazyColumn(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { selectedMonth = m }
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = m,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        // Monthly Metrics Overview Header Card
+                        item {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .glassBorder(themeMode, RoundedCornerShape(20.dp)),
+                                shape = RoundedCornerShape(20.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isGlass) Color(0x3B0F172A) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Text(
+                                        text = Localizer.t("REPORT_SUMMARY_HEADER", appLanguage),
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+
+                                    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f))
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column {
+                                            Text(Localizer.t("TOTAL_INCOME", appLanguage), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                                            Text("৳${formatBDT(incomeSum)}", fontWeight = FontWeight.Bold, color = IncomeGreen, fontSize = 15.sp)
+                                        }
+                                        Column {
+                                            Text(Localizer.t("TOTAL_EXPENSE", appLanguage), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                                            Text("৳${formatBDT(expenseSum)}", fontWeight = FontWeight.Bold, color = ExpenseRed, fontSize = 15.sp)
+                                        }
+                                        Column {
+                                            Text(Localizer.t("NET_BALANCE", appLanguage), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                                            Text("৳${formatBDT(netBalance)}", fontWeight = FontWeight.Bold, color = if (netBalance >= 0) IncomeGreen else ExpenseRed, fontSize = 15.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Filters section: Search note + Dropdown month selector
+                        item {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                placeholder = { Text(Localizer.t("REPORT_SEARCH_PLACEHOLDER", appLanguage), fontSize = 13.sp) },
+                                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+
+                        // Distinct Month filter selector chips
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                // ALL option
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (selectedMonth == "ALL") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                                        .clickable { selectedMonth = "ALL" }
+                                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text(
+                                        text = if (appLanguage == AppLanguage.BN) "সব সময়" else "All Time",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (selectedMonth == "ALL") Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+
+                                distinctMonths.forEach { m ->
+                                    val isSel = selectedMonth == m
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isSel) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                                            .clickable { selectedMonth = m }
+                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            text = m,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Export CSV option
+                        item {
+                            Button(
+                                onClick = {
+                                    val fileName = if (selectedMonth == "ALL") {
+                                        val currentMonthName = SimpleDateFormat("MMMM", Locale.US).format(Date())
+                                        val currentYearName = SimpleDateFormat("yyyy", Locale.US).format(Date())
+                                        "AmarTaka_Monthly_Report_${currentMonthName}_${currentYearName}.csv"
+                                    } else {
+                                        val cleanMonth = selectedMonth.replace(" ", "_")
+                                        "AmarTaka_Monthly_Report_${cleanMonth}.csv"
+                                    }
+                                    com.example.ui.util.CsvExporter.exportTransactions(context, filteredList, fileName)
+                                    Toast.makeText(
+                                        context,
+                                        if (appLanguage == AppLanguage.BN) "রিপোর্ট শেয়ার করা হচ্ছে!" else "Sharing Monthly CSV Report!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = if (appLanguage == AppLanguage.BN) "রপ্তানি করুন (CSV)" else "Export Transactions CSV",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+
+                        // List Header
+                        item {
+                            Text(
+                                text = "${Localizer.t("REPORT_HISTORY_TITLE", appLanguage)} (${filteredList.size})",
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        // Filtered transactions list
+                        if (filteredList.isEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = Localizer.t("EMPTY_TX", appLanguage),
+                                        color = Color.Gray,
+                                        fontSize = 13.sp
+                                    )
+                                }
+                            }
+                        } else {
+                            items(filteredList) { tx ->
+                                TransactionRowItem(tx, appLanguage, onDelete = {
+                                    viewModel.deleteTransaction(tx)
+                                    Toast.makeText(
+                                        context,
+                                        if (appLanguage == AppLanguage.BN) "লেনদেন ডিলিট করা হয়েছে!" else "Transaction deleted successfully!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                })
+                            }
+                        }
                     }
                 }
-            }
-        }
-
-        // Export CSV option
-        item {
-            Button(
-                onClick = {
-                    Toast.makeText(
-                        context,
-                        if (appLanguage == AppLanguage.BN) "রপ্তানি সম্পন্ন হয়েছে!" else "Exported to CSV successfully!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = if (appLanguage == AppLanguage.BN) "রপ্তানি করুন (CSV)" else "Export Transactions CSV",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp
-                )
-            }
-        }
-
-        // List Header
-        item {
-            Text(
-                text = "${Localizer.t("REPORT_HISTORY_TITLE", appLanguage)} (${filteredList.size})",
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        // Filtered transactions list
-        if (filteredList.isEmpty()) {
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = Localizer.t("EMPTY_TX", appLanguage),
-                        color = Color.Gray,
-                        fontSize = 13.sp
-                    )
-                }
-            }
-        } else {
-            items(filteredList) { tx ->
-                TransactionRowItem(tx, appLanguage, onDelete = {
-                    viewModel.deleteTransaction(tx)
-                    Toast.makeText(
-                        context,
-                        if (appLanguage == AppLanguage.BN) "লেনদেন ডিলিট করা হয়েছে!" else "Transaction deleted successfully!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                })
             }
         }
     }

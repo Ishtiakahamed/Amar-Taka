@@ -36,6 +36,20 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
     private val _budgetLimit = MutableStateFlow(settingsRepository.getBudgetLimit())
     val budgetLimit: StateFlow<Double> = _budgetLimit
 
+    // --- StateFlows for challenges ---
+    val joinedChallenges = MutableStateFlow<Map<String, Long>>(emptyMap())
+    val completedChallenges = MutableStateFlow<Set<String>>(emptySet())
+    val challengeProgress = MutableStateFlow<Map<String, Int>>(emptyMap())
+
+    private val challengeList = listOf(
+        "CHALLENGE_7_DAY_SAVING",
+        "CHALLENGE_30_DAY_SAVING",
+        "CHALLENGE_NO_FAST_FOOD",
+        "CHALLENGE_NO_RICKSHAW",
+        "CHALLENGE_SAVE_500",
+        "CHALLENGE_SAVE_1000"
+    )
+
     init {
         val database = AppDatabase.getDatabase(application)
         financeRepository = FinanceRepository(database.financeDao())
@@ -49,6 +63,69 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
         savingsGoals = financeRepository.allSavingsGoals.stateIn(
             viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()
         )
+
+        loadChallengesState()
+    }
+
+    private fun loadChallengesState() {
+        val joins = mutableMapOf<String, Long>()
+        val completes = mutableSetOf<String>()
+        val prog = mutableMapOf<String, Int>()
+        challengeList.forEach { id ->
+            val date = settingsRepository.getChallengeJoinDate(id)
+            if (date > 0) {
+                joins[id] = date
+            }
+            if (settingsRepository.isChallengeCompleted(id)) {
+                completes.add(id)
+            }
+            prog[id] = settingsRepository.getChallengeProgress(id)
+        }
+        joinedChallenges.value = joins
+        completedChallenges.value = completes
+        challengeProgress.value = prog
+    }
+
+    fun startChallenge(id: String) {
+        viewModelScope.launch {
+            settingsRepository.joinChallenge(id, System.currentTimeMillis())
+            settingsRepository.setChallengeProgress(id, 0)
+            settingsRepository.setChallengeCompleted(id, false)
+            loadChallengesState()
+        }
+    }
+
+    fun incrementChallengeProgress(id: String, maxProgress: Int) {
+        viewModelScope.launch {
+            val current = settingsRepository.getChallengeProgress(id)
+            val next = (current + 1).coerceAtMost(maxProgress)
+            settingsRepository.setChallengeProgress(id, next)
+            if (next >= maxProgress) {
+                settingsRepository.setChallengeCompleted(id, true)
+            }
+            loadChallengesState()
+        }
+    }
+
+    fun setChallengeProgress(id: String, progress: Int, maxProgress: Int) {
+        viewModelScope.launch {
+            settingsRepository.setChallengeProgress(id, progress)
+            if (progress >= maxProgress) {
+                settingsRepository.setChallengeCompleted(id, true)
+            } else {
+                settingsRepository.setChallengeCompleted(id, false)
+            }
+            loadChallengesState()
+        }
+    }
+
+    fun resetChallenge(id: String) {
+        viewModelScope.launch {
+            settingsRepository.joinChallenge(id, 0L)
+            settingsRepository.setChallengeProgress(id, 0)
+            settingsRepository.setChallengeCompleted(id, false)
+            loadChallengesState()
+        }
     }
 
     fun setThemeMode(mode: ThemeMode) {
