@@ -72,4 +72,20 @@ class SettingsRepository(context: Context) {
     fun setChallengeProgress(id: String, progress: Int) {
         prefs.edit().putInt("challenge_progress_$id", progress).apply()
     }
+
+    fun getProfileName(): String {
+        return prefs.getString("profile_name", "") ?: ""
+    }
+
+    fun setProfileName(name: String) {
+        prefs.edit().putString("profile_name", name).apply()
+    }
+
+    fun getProfileImageUri(): String {
+        return prefs.getString("profile_image_uri", "") ?: ""
+    }
+
+    fun setProfileImageUri(uri: String) {
+        prefs.edit().putString("profile_image_uri", uri).apply()
+    }
 }

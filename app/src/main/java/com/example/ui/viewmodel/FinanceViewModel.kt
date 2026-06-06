@@ -36,6 +36,12 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
     private val _budgetLimit = MutableStateFlow(settingsRepository.getBudgetLimit())
     val budgetLimit: StateFlow<Double> = _budgetLimit
 
+    private val _profileName = MutableStateFlow(settingsRepository.getProfileName())
+    val profileName: StateFlow<String> = _profileName
+
+    private val _profileImageUri = MutableStateFlow(settingsRepository.getProfileImageUri())
+    val profileImageUri: StateFlow<String> = _profileImageUri
+
     // --- StateFlows for challenges ---
     val joinedChallenges = MutableStateFlow<Map<String, Long>>(emptyMap())
     val completedChallenges = MutableStateFlow<Set<String>>(emptySet())
@@ -149,6 +155,15 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun updateProfile(name: String, imageUri: String) {
+        viewModelScope.launch {
+            settingsRepository.setProfileName(name)
+            settingsRepository.setProfileImageUri(imageUri)
+            _profileName.value = name
+            _profileImageUri.value = imageUri
+        }
+    }
+
     // Transactions
     fun addTransaction(amount: Double, type: String, category: String, wallet: String, note: String, date: Long) {
         viewModelScope.launch {
@@ -222,5 +237,14 @@ class FinanceViewModel(application: Application) : AndroidViewModel(application)
             val cal = Calendar.getInstance().apply { timeInMillis = tx.date }
             cal.get(Calendar.MONTH) == currentMonth && cal.get(Calendar.YEAR) == currentYear
         }.sumOf { it.amount }
+    }
+
+    fun clearAllData() {
+        viewModelScope.launch {
+            transactions.value.forEach { financeRepository.deleteTransaction(it) }
+            loans.value.forEach { financeRepository.deleteLoan(it) }
+            savingsGoals.value.forEach { financeRepository.deleteSavingsGoal(it) }
+            setBudgetLimit(0.0)
+        }
     }
 }

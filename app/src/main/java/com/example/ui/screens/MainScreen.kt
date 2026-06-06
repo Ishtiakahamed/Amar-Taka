@@ -58,9 +58,13 @@ fun Modifier.glassBorder(themeMode: ThemeMode, shape: Shape): Modifier {
 fun MainScreen(viewModel: FinanceViewModel) {
     val appLanguage by viewModel.appLanguage.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState()
+    val transactions by viewModel.transactions.collectAsState()
+    val savingsGoals by viewModel.savingsGoals.collectAsState()
     var currentTab by remember { mutableStateOf(0) }
+    var showQuickAddSheet by remember { mutableStateOf(false) }
 
     val isGlass = themeMode == ThemeMode.GLASSMORPHISM
+    val maxBg = if (isGlass) Color(0xFF0F172A) else MaterialTheme.colorScheme.background
 
     Scaffold(
         topBar = {
@@ -80,28 +84,59 @@ fun MainScreen(viewModel: FinanceViewModel) {
         },
         bottomBar = {
             NavigationBar(
-                containerColor = if (isGlass) Color(0xFF1E293B) else MaterialTheme.colorScheme.surface,
+                containerColor = if (isGlass) Color(0xCF1E293B) else MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp
             ) {
                 val items = listOf(
-                    if (appLanguage == AppLanguage.BN) "ড্যাশবোর্ড" else "Dashboard",
+                    if (appLanguage == AppLanguage.BN) "হোম" else "Home",
+                    if (appLanguage == AppLanguage.BN) "ক্যালেন্ডার" else "Calendar",
                     if (appLanguage == AppLanguage.BN) "হিসাব" else "Records",
-                    if (appLanguage == AppLanguage.BN) "দেনা-পাওনা" else "Loans",
-                    if (appLanguage == AppLanguage.BN) "সেটিংস ও লক্ষ্য" else "Settings"
+                    if (appLanguage == AppLanguage.BN) "সঞ্চয়" else "Savings",
+                    if (appLanguage == AppLanguage.BN) "প্রোফাইল" else "Profile"
                 )
-                val icons = listOf(Icons.Default.Home, Icons.Default.List, Icons.Default.AccountBox, Icons.Default.Settings)
+                val icons = listOf(
+                    Icons.Default.Home,
+                    Icons.Default.DateRange,
+                    Icons.Default.List,
+                    Icons.Default.Star,
+                    Icons.Default.Person
+                )
 
                 items.forEachIndexed { index, label ->
                     NavigationBarItem(
                         icon = { Icon(icons[index], contentDescription = label) },
                         label = { Text(label, fontSize = 10.sp) },
                         selected = currentTab == index,
-                        onClick = { currentTab = index }
+                        onClick = { currentTab = index },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = if (isGlass) Color(0xFFC084FC) else MaterialTheme.colorScheme.primary,
+                            indicatorColor = Color(0xFF8B5CF6),
+                            unselectedIconColor = Color.Gray,
+                            unselectedTextColor = Color.Gray
+                        )
                     )
                 }
             }
         },
-        containerColor = MaterialTheme.colorScheme.background
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { showQuickAddSheet = true },
+                containerColor = Color(0xFF8B5CF6),
+                contentColor = Color.White,
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = if (appLanguage == AppLanguage.BN) "+ হিসাব" else "+ Record",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
+            }
+        },
+        containerColor = maxBg
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -110,12 +145,316 @@ fun MainScreen(viewModel: FinanceViewModel) {
         ) {
             when (currentTab) {
                 0 -> DashboardTab(viewModel)
-                1 -> HisabTab(viewModel)
-                2 -> LoanScreen(viewModel)
-                3 -> SettingsScreen(viewModel)
+                1 -> CalendarView(viewModel)
+                2 -> HisabTab(viewModel)
+                3 -> SavingsTab(viewModel)
+                4 -> ProfileTab(viewModel)
             }
         }
     }
+
+    if (showQuickAddSheet) {
+        GlobalQuickAddDialog(
+            appLanguage = appLanguage,
+            viewModel = viewModel,
+            onDismiss = { showQuickAddSheet = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun GlobalQuickAddDialog(
+    appLanguage: AppLanguage,
+    viewModel: FinanceViewModel,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val savingsGoals by viewModel.savingsGoals.collectAsState()
+    val isBn = appLanguage == AppLanguage.BN
+
+    var quickType by remember { mutableStateOf("EXPENSE") }
+    var quickAmount by remember { mutableStateOf("") }
+    var quickWallet by remember { mutableStateOf("ক্যাশ") }
+    var quickCategory by remember { mutableStateOf("অন্যান্য") }
+    var quickNote by remember { mutableStateOf("") }
+    var transferDestWallet by remember { mutableStateOf("বিকাশ") }
+    var loanPersonName by remember { mutableStateOf("") }
+    var loanType by remember { mutableStateOf("GAVE") } // GAVE (Lent), TOOK (Borrowed)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isBn) "নতুন হিসাব যুক্ত করুন" else "Quick Transaction Ledger",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(16.dp))
+                }
+            }
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Type selector row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    val types = listOf("EXPENSE", "INCOME", "SAVINGS", "TRANSFER", "LOAN")
+                    types.forEach { t ->
+                        val isSel = quickType == t
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSel) Color(0xFF8B5CF6) else Color.Transparent)
+                                .clickable {
+                                    quickType = t
+                                    quickCategory = when (t) {
+                                        "EXPENSE" -> "অন্যান্য"
+                                        "INCOME" -> "অন্যান্য"
+                                        "SAVINGS" -> "ভবিষ্যৎ সঞ্চয়"
+                                        "LOAN" -> "বন্ধুবান্ধব"
+                                        else -> "বিকাশ"
+                                    }
+                                }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val label = when (t) {
+                                "EXPENSE" -> if (isBn) "ব্যয়" else "Exp"
+                                "INCOME" -> if (isBn) "আয়" else "Inc"
+                                "SAVINGS" -> if (isBn) "সঞ্চয়" else "Sav"
+                                "TRANSFER" -> if (isBn) "বদলি" else "Xfer"
+                                else -> if (isBn) "ঋণ" else "Loan"
+                            }
+                            Text(
+                                text = label,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                // Amount
+                OutlinedTextField(
+                    value = quickAmount,
+                    onValueChange = { quickAmount = it },
+                    label = { Text(if (isBn) "টাকার পরিমাণ (৳)" else "Amount (৳)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    singleLine = true
+                )
+
+                // Extra sections
+                if (quickType == "TRANSFER") {
+                    Text(text = if (isBn) "কোথায় পাঠাবেন?" else "Target wallet account:", fontSize = 10.sp, color = Color.Gray)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        val listW = listOf("ক্যাশ", "বিকাশ", "নগদ", "রকেট", "ব্যাংক")
+                        listW.forEach { w ->
+                            val isSel = transferDestWallet == w
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (isSel) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surfaceVariant)
+                                    .clickable { transferDestWallet = w }
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(Localizer.translateWallet(w, appLanguage), color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.sp)
+                            }
+                        }
+                    }
+                } else if (quickType == "LOAN") {
+                    OutlinedTextField(
+                        value = loanPersonName,
+                        onValueChange = { loanPersonName = it },
+                        label = { Text(if (isBn) "ব্যক্তির নাম" else "Person Name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        singleLine = true
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (loanType == "GAVE") IncomeGreen else MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { loanType = "GAVE" }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (isBn) "টাকা পাবো (Lent)" else "Lent (GAVE)",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (loanType == "GAVE") Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (loanType == "TOOK") ExpenseRed else MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { loanType = "TOOK" }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (isBn) "টাকা দেবো (Borrowed)" else "Borrowed (TOOK)",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (loanType == "TOOK") Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                // Source Account Wallet selection chips
+                Text(text = if (isBn) "কোথা থেকে লেনদেন হয়েছে?" else "Source Wallet:", fontSize = 10.sp, color = Color.Gray)
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    val listW = listOf("ক্যাশ", "বিকাশ", "নগদ", "রকেট", "ব্যাংক")
+                    listW.forEach { w ->
+                        val isSel = quickWallet == w
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSel) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { quickWallet = w }
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = Localizer.translateWallet(w, appLanguage),
+                                fontSize = 10.sp,
+                                color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                // Note Description
+                OutlinedTextField(
+                    value = quickNote,
+                    onValueChange = { quickNote = it },
+                    label = { Text(if (isBn) "সংক্ষিপ্ত নোট (ঐচ্ছিক)" else "Brief note (Optional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    singleLine = true
+                )
+
+                // Categories
+                Text(text = if (isBn) "খাত নির্বাচন করুন:" else "Category:", fontSize = 10.sp, color = Color.Gray)
+                val cats = when (quickType) {
+                    "EXPENSE" -> listOf("খাবার", "ভাড়া", "বাজার/শপিং", "পরিবহন", "চিকিৎসা", "বিনোদন", "বিল", "অন্যান্য")
+                    "INCOME" -> listOf("বেতন", "ব্যবসা", "ফ্রিল্যান্সিং", "উপহার", "অন্যান্য")
+                    "SAVINGS" -> listOf("ভবিষ্যৎ সঞ্চয়", "জরুরী ফান্ড", "ডিপোজিট", "অন্যান্য")
+                    "LOAN" -> listOf("বন্ধুবান্ধব", "পরিবার", "ব্যাংক লোন", "অন্যান্য")
+                    else -> listOf("ক্যাশ", "বিকাশ", "নগদ", "রকেট", "ব্যাংক")
+                }
+                
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    cats.forEach { c ->
+                        val isSel = quickCategory == c
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isSel) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceVariant)
+                                .clickable { quickCategory = c }
+                                .padding(horizontal = 8.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = if (quickType == "TRANSFER") Localizer.translateWallet(c, appLanguage) else Localizer.translateCategory(c, appLanguage),
+                                fontSize = 10.sp,
+                                color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val value = quickAmount.toDoubleOrNull()
+                    if (value == null || value <= 0.0) {
+                        Toast.makeText(context, if (isBn) "সঠিক টাকার অংক লিখুন!" else "Please write a valid amount!", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    
+                    val resolvedCat = if (quickType == "TRANSFER") transferDestWallet else quickCategory
+                    val resolvedNote = when (quickType) {
+                        "TRANSFER" -> if (isBn) "স্থানান্তর: $quickWallet থেকে $transferDestWallet" else "Transferred from $quickWallet to $transferDestWallet"
+                        "LOAN" -> (if (loanType == "GAVE") "ঋণ দেওয়া হয়েছে: " else "ঋণ নেওয়া হয়েছে: ") + loanPersonName + " " + quickNote
+                        else -> quickNote
+                    }
+                    
+                    viewModel.addTransaction(
+                        amount = value,
+                        type = quickType,
+                        category = resolvedCat,
+                        wallet = quickWallet,
+                        note = resolvedNote,
+                        date = System.currentTimeMillis()
+                    )
+
+                    if (quickType == "SAVINGS" && savingsGoals.isNotEmpty()) {
+                        viewModel.updateSavingsAmount(savingsGoals.first(), value)
+                    }
+                    
+                    if (quickType == "LOAN") {
+                        viewModel.addLoan(
+                            personName = loanPersonName,
+                            amount = value,
+                            type = loanType,
+                            note = resolvedNote,
+                            dueDate = System.currentTimeMillis() + 14 * 24 * 3600 * 1000L
+                        )
+                    }
+
+                    onDismiss()
+                    Toast.makeText(context, if (isBn) "সফলভাবে রেকর্ড করা হয়েছে! 🎉" else "Saved successfully! 🎉", Toast.LENGTH_SHORT).show()
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B5CF6))
+            ) {
+                Text(if (isBn) "সংরক্ষণ" else "Save", fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(if (isBn) "বাতিল" else "Cancel")
+            }
+        }
+    )
 }
 
 // --- TRACKER/HOME TAB ---
