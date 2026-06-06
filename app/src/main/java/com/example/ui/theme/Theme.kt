@@ -36,10 +36,10 @@ private val EyeCareColorScheme = lightColorScheme(
 )
 
 private val GlassmorphismColorScheme = darkColorScheme(
-    primary = Color(0xFFBBDEFB),
-    secondary = Color(0xFF90CAF9),
-    background = Color(0xFF0F172A), // rich obsidian background
-    surface = Color(0x3B1E293B)     // translucent slate surface
+    primary = Color(0xFFC084FC),
+    secondary = Color(0xFF8B5CF6),
+    background = Color(0xFF0C091E), // Rich, premium deep navy-purple dark background
+    surface = Color(0x25241C42)     // Ultra-soft frosted glass border background
 )
 
 @Composable

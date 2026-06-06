@@ -416,5 +416,5 @@ private fun translateWalletText(wallet: String, lang: AppLanguage): String {
 }
 
 private fun formatBDTFloat(value: Double): String {
-    return String.format(Locale.US, "%,.1f", value)
+    return String.format(Locale.US, "%,d", value.toInt())
 }

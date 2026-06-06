@@ -76,4 +76,7 @@ dependencies {
 
     // Coil Image Loading
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // Google Fonts for Compose
+    implementation("androidx.compose.ui:ui-text-google-fonts")
 }

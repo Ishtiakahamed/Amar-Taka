@@ -69,6 +69,10 @@ fun DashboardTab(viewModel: FinanceViewModel) {
     val isBn = appLanguage == AppLanguage.BN
     val cardBg = if (isGlass) Color(0x3B1E293B) else MaterialTheme.colorScheme.surface
 
+    val recentTransactions = remember(transactions) {
+        transactions.sortedByDescending { it.date }.take(3)
+    }
+
     var selectedFilter by remember { mutableStateOf("THIS_MONTH") } // TODAY, 7_DAYS, THIS_MONTH, THIS_YEAR
 
     val breakdownList = remember(transactions) {
@@ -356,54 +360,122 @@ fun DashboardTab(viewModel: FinanceViewModel) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(if (isGlass) 1.dp else 0.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(24.dp)),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = if (isGlass) Color(0x7A0F172A) else MaterialTheme.colorScheme.primaryContainer)
+                    .border(if (isGlass) 1.dp else 0.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(28.dp)),
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = if (isGlass) Color(0x3B1F1640) else MaterialTheme.colorScheme.primaryContainer)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp),
+                        .padding(vertical = 24.dp, horizontal = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = if (isBn) "মোট ব্যালেন্স" else "Total Balance",
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
-                        color = if (isGlass) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        color = Color.White.copy(alpha = 0.6f)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "৳ ${formatBDTWithLanguage(totalBalance, appLanguage)}",
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.Black,
-                        color = if (isGlass) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
 
-                    Spacer(modifier = Modifier.height(14.dp))
-                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.12f)))
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // Quick mini ledger values inside Hero card
+                    // Small horizontal wallet chips under it
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        walletBalances.forEach { (name, bal) ->
+                            item {
+                                val chipIcon = when {
+                                    name == "ক্যাশ" || name == "Cash" || name.contains("Cash") -> Icons.Default.ShoppingCart
+                                    name == "বিকাশ" || name == "bKash" || name.contains("bKash") -> Icons.Default.Send
+                                    name == "নগদ" || name == "Nagad" || name.contains("Nagad") -> Icons.Default.ShoppingCart
+                                    name == "রকেট" || name == "Rocket" || name.contains("Rocket") -> Icons.Default.Refresh
+                                    name == "ব্যাংক" || name == "Bank" || name.contains("Bank") -> Icons.Default.Settings
+                                    else -> Icons.Default.Star
+                                }
+                                val iconColor = when {
+                                    name == "ক্যাশ" || name == "Cash" || name.contains("Cash") -> Color(0xFF10B981)
+                                    name == "বিকাশ" || name == "bKash" || name.contains("bKash") -> Color(0xFFEC4899)
+                                    name == "নগদ" || name == "Nagad" || name.contains("Nagad") -> Color(0xFFF97316)
+                                    name == "রকেট" || name == "Rocket" || name.contains("Rocket") -> Color(0xFF8B5CF6)
+                                    name == "ব্যাংক" || name == "Bank" || name.contains("Bank") -> Color(0xFF3B82F6)
+                                    else -> Color(0xFFF59E0B)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color.White.copy(alpha = 0.06f))
+                                        .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = chipIcon,
+                                            contentDescription = null,
+                                            tint = iconColor,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Column {
+                                            Text(
+                                                text = name,
+                                                fontSize = 8.sp,
+                                                color = Color.LightGray.copy(alpha = 0.6f),
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                            Text(
+                                                text = "৳ ${formatBDTWithLanguage(bal, appLanguage)}",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+                    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.08f)))
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Clean summary row under divider
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = if (isBn) "আজকের আয়" else "Today's Income", fontSize = 9.sp, color = Color.Gray)
-                            Text(text = "৳${formatBDTWithLanguage(todayIncome, appLanguage)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = IncomeGreen)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                            Text(text = if (isBn) "আজকের আয়" else "Today's Income", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(text = "৳ ${formatBDTWithLanguage(todayIncome, appLanguage)}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF10B981))
                         }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = if (isBn) "আজকের খরচ" else "Today's Expense", fontSize = 9.sp, color = Color.Gray)
-                            Text(text = "৳${formatBDTWithLanguage(todayExpense, appLanguage)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = ExpenseRed)
+                        Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.White.copy(alpha = 0.08f)))
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                            Text(text = if (isBn) "আজকের খরচ" else "Today's Expense", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Text(text = "৳ ${formatBDTWithLanguage(todayExpense, appLanguage)}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFFEF4444))
                         }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = if (isBn) "লাভ / ক্ষতি" else "Net gain/loss", fontSize = 9.sp, color = Color.Gray)
+                        Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.White.copy(alpha = 0.08f)))
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                            Text(text = if (isBn) "লাভ / ক্ষতি" else "Net gain/loss", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                            Spacer(modifier = Modifier.height(3.dp))
                             Text(
-                                text = "৳${formatBDTWithLanguage(profitLoss, appLanguage)}", 
-                                fontSize = 12.sp, 
+                                text = "৳ ${formatBDTWithLanguage(profitLoss, appLanguage)}", 
+                                fontSize = 13.sp, 
                                 fontWeight = FontWeight.Bold, 
-                                color = if (profitLoss >= 0.0) IncomeGreen else ExpenseRed
+                                color = if (profitLoss >= 0.0) Color(0xFF10B981) else Color(0xFFEF4444)
                             )
                         }
                     }
@@ -493,38 +565,69 @@ fun DashboardTab(viewModel: FinanceViewModel) {
                 colors = CardDefaults.cardColors(containerColor = cardBg),
                 shape = RoundedCornerShape(18.dp)
             ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("📖", fontSize = 16.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFF8B5CF6).copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = Color(0xFFC084FC),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = if (isBn) "আজকের গল্প (Insights)" else "Today's Story Insights",
                             fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.primary
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White
                         )
                     }
 
                     dashboardStories.forEach { story ->
+                        val isWarning = story.contains("খরচ") || story.contains("সীমা") || story.contains("বেশি") || story.contains("অতিরিক্ত")
+                        val isPositive = story.contains("সাশ্রয়") || story.contains("সঞ্চয়") || story.contains("নিরাপদ") || story.contains("অভিনন্দন") || story.contains("বাঁচাতে")
+                        val bulletColor = when {
+                            isWarning -> Color(0xFFEF4444)
+                            isPositive -> Color(0xFF10B981)
+                            else -> Color(0xFFC084FC)
+                        }
+                        val bulletIcon = when {
+                            isWarning -> Icons.Default.Warning
+                            isPositive -> Icons.Default.CheckCircle
+                            else -> Icons.Default.Info
+                        }
+
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 2.dp)
+                            verticalAlignment = Alignment.Top,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
                         ) {
-                            Box(
+                            Icon(
+                                imageVector = bulletIcon,
+                                contentDescription = null,
+                                tint = bulletColor,
                                 modifier = Modifier
-                                    .size(6.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.secondary)
+                                    .padding(top = 2.dp)
+                                    .size(14.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = story,
                                 fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Medium
+                                color = Color.White.copy(alpha = 0.85f),
+                                fontWeight = FontWeight.Normal,
+                                lineHeight = 16.sp
                             )
                         }
                     }
@@ -534,101 +637,109 @@ fun DashboardTab(viewModel: FinanceViewModel) {
 
         // --- 5. KEY FINANCIAL METRICS GRID CARD ---
         item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(if (isGlass) 1.dp else 0.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp)),
-                colors = CardDefaults.cardColors(containerColor = cardBg),
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        text = if (isBn) "ড্যাশবোর্ড সারসংক্ষেপ" else "Ledger Summary Grid",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.primary
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    text = if (isBn) "সারসংক্ষেপ ও কুঠুরি" else "Ledger Summary metrics",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
+                )
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    MetricCell(
+                        label = if (isBn) "৭ দিনের খরচ" else "7D Spends Limit",
+                        value = "৳ ${formatBDTWithLanguage(sevenDaysExpense, appLanguage)}",
+                        subtext = if (isBn) "বিগত ৭ দিন" else "Past 7 days accumulated",
+                        valueColor = Color(0xFFFDA4AF),
+                        modifier = Modifier.weight(1f),
+                        isGlass = isGlass
                     )
+                    MetricCell(
+                        label = if (isBn) "এই মাসের আয়" else "This Month Income",
+                        value = "৳ ${formatBDTWithLanguage(thisMonthIncome, appLanguage)}",
+                        subtext = if (isBn) "মাসিক উপার্জিত" else "Earnings this month",
+                        valueColor = Color(0xFF34D399),
+                        modifier = Modifier.weight(1f),
+                        isGlass = isGlass
+                    )
+                }
 
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        MetricCell(
-                            label = if (isBn) "৭ দিনের খরচ" else "7d Expense",
-                            value = "৳${formatBDTWithLanguage(sevenDaysExpense, appLanguage)}",
-                            modifier = Modifier.weight(1f)
-                        )
-                        Box(modifier = Modifier.width(1.dp).height(36.dp).background(Color.Gray.copy(alpha = 0.15f)))
-                        MetricCell(
-                            label = if (isBn) "এই মাসের আয়" else "This Month Inc",
-                            value = "৳${formatBDTWithLanguage(thisMonthIncome, appLanguage)}",
-                            modifier = Modifier.weight(1f),
-                            valueColor = IncomeGreen
-                        )
-                    }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    MetricCell(
+                        label = if (isBn) "এই মাসের খরচ" else "This Month Expense",
+                        value = "৳ ${formatBDTWithLanguage(thisMonthExpense, appLanguage)}",
+                        subtext = if (isBn) "মাসিক ব্যয়িত" else "Spends this month",
+                        valueColor = Color(0xFFF87171),
+                        modifier = Modifier.weight(1f),
+                        isGlass = isGlass
+                    )
+                    MetricCell(
+                        label = if (isBn) "এই মাসের সঞ্চয়" else "This Month Savings",
+                        value = "৳ ${formatBDTWithLanguage(thisMonthSavings, appLanguage)}",
+                        subtext = if (isBn) "মাসিক জমা" else "Saved this month",
+                        valueColor = Color(0xFF38BDF8),
+                        modifier = Modifier.weight(1f),
+                        isGlass = isGlass
+                    )
+                }
 
-                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    MetricCell(
+                        label = if (isBn) "মানি হেলথ স্কোর" else "Money Health Grade",
+                        value = "$moneyHealthScore / ১০০",
+                        subtext = if (moneyHealthScore >= 75) (if (isBn) "চমৎকার অবস্থায় আছে" else "Excellent score") else (if (isBn) "मध्यम অবস্থায় আছে" else "Moderate score"),
+                        valueColor = if (moneyHealthScore >= 75) Color(0xFF34D399) else Color(0xFFFBBF24),
+                        modifier = Modifier.weight(1f),
+                        isGlass = isGlass
+                    )
+                    MetricCell(
+                        label = if (isBn) "হিসাব স্ট্রেইক" else "Ledger Active Days",
+                        value = if (isBn) "$challengeStreak দিন" else "$challengeStreak Days",
+                        subtext = if (isBn) "টানা রেকর্ড করার ধারা" else "Days recorded consecutively",
+                        valueColor = Color(0xFFFB923C),
+                        modifier = Modifier.weight(1f),
+                        isGlass = isGlass
+                    )
+                }
 
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        MetricCell(
-                            label = if (isBn) "এই মাসের খরচ" else "This Month Exp",
-                            value = "৳${formatBDTWithLanguage(thisMonthExpense, appLanguage)}",
-                            modifier = Modifier.weight(1f),
-                            valueColor = ExpenseRed
-                        )
-                        Box(modifier = Modifier.width(1.dp).height(36.dp).background(Color.Gray.copy(alpha = 0.15f)))
-                        MetricCell(
-                            label = if (isBn) "এই মাসের সঞ্চয়" else "This Month Sav",
-                            value = "৳${formatBDTWithLanguage(thisMonthSavings, appLanguage)}",
-                            modifier = Modifier.weight(1f),
-                            valueColor = Color(0xFF0EA5E9)
-                        )
-                    }
-
-                    Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        MetricCell(
-                            label = if (isBn) "মানি হেলথ স্কোর" else "Money Health",
-                            value = "$moneyHealthScore/১০০",
-                            modifier = Modifier.weight(1f),
-                            valueColor = if (moneyHealthScore >= 75) IncomeGreen else Color(0xFFF1C40F)
-                        )
-                        Box(modifier = Modifier.width(1.dp).height(36.dp).background(Color.Gray.copy(alpha = 0.15f)))
-                        MetricCell(
-                            label = if (isBn) "হিসাব স্ট্রেইক" else "Active Streak",
-                            value = if (isBn) "$challengeStreak দিন" else "$challengeStreak Days",
-                            modifier = Modifier.weight(1f),
-                            valueColor = Color(0xFFEE5A24)
-                        )
-                    }
-
-                    // Active saving goal card embedded
-                    if (savingsGoals.isNotEmpty()) {
-                        Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                if (savingsGoals.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(18.dp)),
+                        colors = CardDefaults.cardColors(containerColor = Color(0x1F241C42)),
+                        shape = RoundedCornerShape(18.dp)
+                    ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = if (isBn) "সঞ্চয় লক্ষ্য প্রগতি ($activeGoalName)" else "Saving Goal Progress ($activeGoalName)",
-                                    fontSize = 10.sp,
-                                    color = Color.Gray
+                                    fontSize = 11.sp,
+                                    color = Color.LightGray.copy(alpha = 0.6f),
+                                    fontWeight = FontWeight.Medium
                                 )
-                                Spacer(modifier = Modifier.height(2.dp))
+                                Spacer(modifier = Modifier.height(6.dp))
                                 LinearProgressIndicator(
                                     progress = activeGoalProgress / 100f,
                                     modifier = Modifier
-                                        .width(150.dp)
-                                        .height(4.dp)
-                                        .clip(RoundedCornerShape(2.dp)),
-                                    color = IncomeGreen
+                                        .fillMaxWidth(0.85f)
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp)),
+                                    color = Color(0xFF10B981),
+                                    trackColor = Color.White.copy(alpha = 0.08f)
                                 )
                             }
                             Text(
                                 text = "$activeGoalProgress%",
-                                fontSize = 13.sp,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = IncomeGreen
+                                color = Color(0xFF10B981)
                             )
                         }
                     }
@@ -644,7 +755,7 @@ fun DashboardTab(viewModel: FinanceViewModel) {
                     text = if (isBn) "কোন খাতে কত খরচ" else "Sector Wise Spends Breakdown",
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = Color.White
                 )
 
                 if (breakdownList.isEmpty()) {
@@ -667,17 +778,142 @@ fun DashboardTab(viewModel: FinanceViewModel) {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = Localizer.translateCategory(catName, appLanguage), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Text(text = Localizer.translateCategory(catName, appLanguage), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color.LightGray)
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "৳${amount.toInt()}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text(text = "৳ ${amount.toInt()}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(4.dp))
-                                        .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f))
+                                        .background(Color.White.copy(alpha = 0.08f))
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
-                                    Text(text = "${pct.toInt()}%", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                                    Text(text = "${pct.toInt()}%", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFFC084FC))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        item { Spacer(modifier = Modifier.height(10.dp)) }
+
+        // --- 7. RECENT TRANSACTIONS (সাম্প্রতিক হিসাব) ---
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = if (isBn) "সাম্প্রতিক হিসাব" else "Recent Transactions",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White
+                )
+
+                if (recentTransactions.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = if (isBn) "কোনো সাম্প্রতিক হিসাব পাওয়া যায়নি" else "No recent transactions.", color = Color.Gray, fontSize = 11.sp)
+                    }
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        recentTransactions.forEach { tx ->
+                            val dateStr = remember(tx.date, appLanguage) {
+                                val formats = SimpleDateFormat("d MMM, hh:mm a", if (appLanguage == AppLanguage.BN) Locale("bn", "BD") else Locale.US)
+                                formats.format(Date(tx.date))
+                            }
+                            val incColor = Color(0xFF10B981)
+                            val expColor = Color(0xFFEF4444)
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(18.dp)),
+                                shape = RoundedCornerShape(18.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0x1F241C42))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(14.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(36.dp)
+                                                .clip(CircleShape)
+                                                .background(
+                                                    if (tx.type == "INCOME") incColor.copy(alpha = 0.15f) else expColor.copy(alpha = 0.15f)
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            val iconVector = when (tx.type) {
+                                                "INCOME" -> Icons.Default.Add
+                                                "EXPENSE" -> Icons.Default.Delete
+                                                "SAVINGS" -> Icons.Default.Star
+                                                "TRANSFER" -> Icons.Default.Refresh
+                                                else -> Icons.Default.AccountBox
+                                            }
+                                            Icon(
+                                                imageVector = iconVector,
+                                                contentDescription = null,
+                                                tint = if (tx.type == "INCOME") incColor else expColor,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = if (tx.type == "TRANSFER") {
+                                                        if (appLanguage == AppLanguage.BN) "স্থানান্তর" else "Transfer"
+                                                    } else {
+                                                        Localizer.translateCategory(tx.category, appLanguage)
+                                                    },
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 13.sp,
+                                                    color = Color.White
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Box(
+                                                    modifier = Modifier
+                                                        .clip(RoundedCornerShape(4.dp))
+                                                        .background(Color.White.copy(alpha = 0.1f))
+                                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                ) {
+                                                    Text(
+                                                        text = Localizer.translateWallet(tx.wallet, appLanguage),
+                                                        fontSize = 9.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color(0xFFC084FC)
+                                                    )
+                                                }
+                                            }
+                                            if (tx.note.isNotBlank()) {
+                                                Text(
+                                                    text = tx.note,
+                                                    fontSize = 11.sp,
+                                                    color = Color.LightGray,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
+                                            Text(text = dateStr, fontSize = 9.sp, color = Color.Gray)
+                                        }
+                                    }
+
+                                    // Right side amount
+                                    Text(
+                                        text = "${if (tx.type == "INCOME") "+" else "-"}৳ \u200e${formatBDTWithLanguage(tx.amount, appLanguage)}",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        color = if (tx.type == "INCOME") incColor else expColor
+                                    )
                                 }
                             }
                         }
@@ -694,34 +930,62 @@ fun DashboardTab(viewModel: FinanceViewModel) {
 fun WalletCard(
     title: String,
     amount: Double,
-    emoji: String,
+    emoji: String, // Kept for method compatibility, but we will draw vector Icons!
     modifier: Modifier = Modifier,
     appLanguage: AppLanguage,
     cardBg: Color
 ) {
+    val (icon, tint) = when {
+        title == "ক্যাশ" || title == "Cash" || title.contains("Cash") -> Pair(Icons.Default.ShoppingCart, Color(0xFF10B981))
+        title == "বিকাশ" || title == "bKash" || title.contains("bKash") -> Pair(Icons.Default.Send, Color(0xFFEC4899))
+        title == "নগদ" || title == "Nagad" || title.contains("Nagad") -> Pair(Icons.Default.ShoppingCart, Color(0xFFF97316))
+        title == "রকেট" || title == "Rocket" || title.contains("Rocket") -> Pair(Icons.Default.Refresh, Color(0xFF8B5CF6))
+        title == "ব্যাংক" || title == "Bank" || title.contains("Bank") -> Pair(Icons.Default.Settings, Color(0xFF3B82F6))
+        title == "সঞ্চয় ব্যালেন্স" || title == "Savings Bal" || title == "সঞ্চয়" || title == "Savings" || title.contains("Savings") -> Pair(Icons.Default.Star, Color(0xFFF59E0B))
+        else -> Pair(Icons.Default.ShoppingCart, Color(0xFF10B981))
+    }
+
     Card(
-        modifier = modifier.height(64.dp),
+        modifier = modifier.height(68.dp),
         colors = CardDefaults.cardColors(containerColor = cardBg),
-        shape = RoundedCornerShape(14.dp)
+        shape = RoundedCornerShape(18.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
-                Text(text = title, fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title, 
+                    fontSize = 10.sp, 
+                    color = Color.LightGray.copy(alpha = 0.5f), 
+                    fontWeight = FontWeight.Medium
+                )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "৳${formatBDTWithLanguage(amount, appLanguage).substringBefore(".")}",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = "৳ ${formatBDTWithLanguage(amount, appLanguage)}",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
             }
-            Text(text = emoji, fontSize = 18.sp)
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(tint.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = tint,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
 }
@@ -730,14 +994,48 @@ fun WalletCard(
 fun MetricCell(
     label: String,
     value: String,
+    subtext: String = "",
+    valueColor: Color = Color.White,
     modifier: Modifier = Modifier,
-    valueColor: Color = MaterialTheme.colorScheme.onSurface
+    isGlass: Boolean = true
 ) {
-    Column(
-        modifier = modifier.padding(vertical = 4.dp, horizontal = 12.dp)
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(82.dp)
+            .border(if (isGlass) 1.dp else 0.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(18.dp)),
+        colors = CardDefaults.cardColors(containerColor = if (isGlass) Color(0x1F241C42) else MaterialTheme.colorScheme.surfaceVariant),
+        shape = RoundedCornerShape(18.dp)
     ) {
-        Text(text = label, fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(text = value, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = valueColor)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = label, 
+                fontSize = 11.sp, 
+                color = Color.LightGray.copy(alpha = 0.6f), 
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                text = value, 
+                fontSize = 16.sp, 
+                fontWeight = FontWeight.Bold, 
+                color = valueColor
+            )
+            if (subtext.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = subtext,
+                    fontSize = 9.sp,
+                    color = Color.LightGray.copy(alpha = 0.4f),
+                    fontWeight = FontWeight.Normal
+                )
+            }
+        }
     }
 }
+

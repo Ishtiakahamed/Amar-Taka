@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -141,30 +142,38 @@ fun HisabTab(viewModel: FinanceViewModel) {
         )
 
         // Aggregated mini health cards for filtered transactions list
+        val green = Color(0xFF10B981)
+        val red = Color(0xFFEF4444)
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(22.dp)),
+            shape = RoundedCornerShape(22.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0x25241C42))
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                    Text(text = if (isBn) "মোট আয়" else "Total Income", fontSize = 10.sp, color = Color.Gray)
-                    Text(text = "৳${formatBDTWithLanguage(totalIncome, appLanguage)}", fontWeight = FontWeight.Bold, color = IncomeGreen, fontSize = 13.sp)
+                    Text(text = if (isBn) "মোট আয়" else "Total Income", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(text = "৳ ${formatBDTWithLanguage(totalIncome, appLanguage)}", fontWeight = FontWeight.Bold, color = green, fontSize = 14.sp)
                 }
-                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.Gray.copy(alpha = 0.2f)))
+                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.White.copy(alpha = 0.08f)))
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                    Text(text = if (isBn) "মোট ব্যয়" else "Total Expense", fontSize = 10.sp, color = Color.Gray)
-                    Text(text = "৳${formatBDTWithLanguage(totalExpense, appLanguage)}", fontWeight = FontWeight.Bold, color = ExpenseRed, fontSize = 13.sp)
+                    Text(text = if (isBn) "মোট ব্যয়" else "Total Expense", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(text = "৳ ${formatBDTWithLanguage(totalExpense, appLanguage)}", fontWeight = FontWeight.Bold, color = red, fontSize = 14.sp)
                 }
-                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.Gray.copy(alpha = 0.2f)))
+                Box(modifier = Modifier.width(1.dp).height(24.dp).background(Color.White.copy(alpha = 0.08f)))
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
-                    Text(text = if (isBn) "অবশিষ্ট" else "Net", fontSize = 10.sp, color = Color.Gray)
-                    Text(text = "৳${formatBDTWithLanguage(netBalance, appLanguage)}", fontWeight = FontWeight.Bold, color = if (netBalance >= 0) IncomeGreen else ExpenseRed, fontSize = 13.sp)
+                    Text(text = if (isBn) "অবশিষ্ট" else "Net", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(text = "৳ ${formatBDTWithLanguage(netBalance, appLanguage)}", fontWeight = FontWeight.Bold, color = if (netBalance >= 0) green else red, fontSize = 14.sp)
                 }
             }
         }
@@ -390,10 +399,15 @@ fun LocalHisabRowItem(
         formats.format(Date(tx.date))
     }
 
+    val incColor = Color(0xFF10B981)
+    val expColor = Color(0xFFEF4444)
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(18.dp)),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0x1F241C42))
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(
@@ -408,7 +422,7 @@ fun LocalHisabRowItem(
                             .size(36.dp)
                             .clip(CircleShape)
                             .background(
-                                if (tx.type == "INCOME") IncomeGreen.copy(alpha = 0.15f) else ExpenseRed.copy(alpha = 0.15f)
+                                if (tx.type == "INCOME") incColor.copy(alpha = 0.15f) else expColor.copy(alpha = 0.15f)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -422,7 +436,7 @@ fun LocalHisabRowItem(
                         Icon(
                             imageVector = iconVector,
                             contentDescription = null,
-                            tint = if (tx.type == "INCOME") IncomeGreen else ExpenseRed,
+                            tint = if (tx.type == "INCOME") incColor else expColor,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -436,20 +450,21 @@ fun LocalHisabRowItem(
                                     Localizer.translateCategory(tx.category, appLanguage)
                                 },
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
+                                fontSize = 13.sp,
+                                color = Color.White
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f))
+                                    .background(Color.White.copy(alpha = 0.1f))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = Localizer.translateWallet(tx.wallet, appLanguage),
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.secondary
+                                    color = Color(0xFFC084FC)
                                 )
                             }
                         }
@@ -457,26 +472,26 @@ fun LocalHisabRowItem(
                             Text(
                                 text = tx.note,
                                 fontSize = 11.sp,
-                                color = Color.Gray,
+                                color = Color.LightGray,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                        Text(text = dateStr, fontSize = 9.sp, color = Color.LightGray)
+                        Text(text = dateStr, fontSize = 9.sp, color = Color.Gray)
                     }
                 }
 
                 // Right hand side amount display
                 Text(
                     text = "${if (tx.type == "INCOME") "+" else "-"}৳${formatBDTWithLanguage(tx.amount, appLanguage)}",
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = if (tx.type == "INCOME") IncomeGreen else ExpenseRed
+                    color = if (tx.type == "INCOME") incColor else expColor
                 )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)))
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.08f)))
             Spacer(modifier = Modifier.height(4.dp))
 
             // Action triggers row
