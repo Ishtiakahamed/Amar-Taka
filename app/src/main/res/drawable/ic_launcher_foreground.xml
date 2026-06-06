@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    viewportWidth="108"
+    viewportHeight="108">
+    
+    <!-- Outer glowing glow ring -->
+    <path
+        android:pathData="M54,22 C36.33,22 22,36.33 22,54 C22,71.67 36.33,86 54,86 C71.67,86 86,71.67 86,54 C86,36.33 71.67,22 54,22 Z"
+        android:fillColor="#15FFFFFF" />
+        
+    <!-- Main outer coin ring -->
+    <path
+        android:pathData="M54,25 C38,25 25,38 25,54 C25,70 38,83 54,83 C70,83 83,70 83,54 C83,38 70,25 54,25 Z"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.5"
+        android:fillColor="#20FFFFFF" />
+        
+    <!-- Stylized Money bills popping from the wallet -->
+    <path
+        android:pathData="M43,38 L65,38 C67,38 68,39 68,41 L68,48 L40,48 L40,41 C40,39 41,38 43,38 Z"
+        android:fillColor="#A7F3D0" />
+    <path
+        android:pathData="M47,33 L59,33 C61,33 62,34 62,36 L62,38 L44,38 L44,36 C44,34 45,33 47,33 Z"
+        android:fillColor="#34D399" />
+
+    <!-- Stylized Wallet body -->
+    <path
+        android:pathData="M34,45 L74,45 C77.3,45 80,47.7 80,51 L80,71 C80,74.3 77.3,77 74,77 L34,77 C30.7,77 28,74.3 28,71 L28,51 C28,47.7 30.7,45 34,45 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Wallet outer fold accent (horizontal bi-fold card slot look) -->
+    <path
+        android:pathData="M28,56 L80,56"
+        android:strokeColor="#E2E8F0"
+        android:strokeWidth="1.5" />
+
+    <!-- Wallet flap -->
+    <path
+        android:pathData="M66,54 L78,54 C79.1,54 80,54.9 80,56 L80,66 C80,67.1 79.1,68 78,68 L66,68 C64.9,68 64,67.1 64,66 L64,56 C64,54.9 64.9,54 66,54 Z"
+        android:fillColor="#FBBF24" />
+
+    <!-- Wallet golden button snap -->
+    <path
+        android:pathData="M69,61 C69,59.9 69.9,59 71,59 C72.1,59 73,59.9 73,61 C73,62.1 72.1,63 71,63 C69.9,63 69,62.1 69,61 Z"
+        android:fillColor="#D97706" />
+
+    <!-- Sparkle/Stars indicating growth/prosperity -->
+    <path
+        android:pathData="M81,31 L83,34 L86,35 L83,36 L81,39 L80,36 L77,35 L80,34 Z"
+        android:fillColor="#FCD34D" />
+</vector>

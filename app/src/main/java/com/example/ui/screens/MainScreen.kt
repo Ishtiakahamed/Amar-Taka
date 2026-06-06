@@ -84,12 +84,12 @@ fun MainScreen(viewModel: FinanceViewModel) {
                 tonalElevation = 8.dp
             ) {
                 val items = listOf(
-                    if (appLanguage == AppLanguage.BN) "হিসাব রাখুন" else "Tracker",
-                    if (appLanguage == AppLanguage.BN) "ইতিহাস" else "History",
+                    if (appLanguage == AppLanguage.BN) "ড্যাশবোর্ড" else "Dashboard",
+                    if (appLanguage == AppLanguage.BN) "হিসাব" else "Records",
                     if (appLanguage == AppLanguage.BN) "দেনা-পাওনা" else "Loans",
                     if (appLanguage == AppLanguage.BN) "সেটিংস ও লক্ষ্য" else "Settings"
                 )
-                val icons = listOf(Icons.Default.Add, Icons.Default.List, Icons.Default.AccountBox, Icons.Default.Settings)
+                val icons = listOf(Icons.Default.Home, Icons.Default.List, Icons.Default.AccountBox, Icons.Default.Settings)
 
                 items.forEachIndexed { index, label ->
                     NavigationBarItem(
@@ -109,8 +109,8 @@ fun MainScreen(viewModel: FinanceViewModel) {
                 .padding(paddingValues)
         ) {
             when (currentTab) {
-                0 -> TrackerTab(viewModel)
-                1 -> HistoryTab(viewModel)
+                0 -> DashboardTab(viewModel)
+                1 -> HisabTab(viewModel)
                 2 -> LoanScreen(viewModel)
                 3 -> SettingsScreen(viewModel)
             }

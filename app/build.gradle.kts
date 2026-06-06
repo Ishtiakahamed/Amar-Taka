@@ -9,7 +9,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example"
+        applicationId = "com.aistudio.amartaka.uxwdp"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
