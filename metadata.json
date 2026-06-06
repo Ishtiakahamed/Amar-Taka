@@ -1,0 +1,6 @@
+{
+  "name": "Amar Taka",
+  "description": "একটি সহজ বাংলা আয়-ব্যয় ট্র্যাকার ও টাকা ম্যানেজমেন্ট অ্যাপ (Bangla Money Manager & Tracker)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
