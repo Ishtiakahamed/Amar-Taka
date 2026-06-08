@@ -28,11 +28,11 @@ class SettingsRepository(context: Context) {
     }
 
     fun getThemeMode(): ThemeMode {
-        val name = prefs.getString("theme_mode", ThemeMode.DAY.name) ?: ThemeMode.DAY.name
+        val name = prefs.getString("theme_mode", ThemeMode.GLASSMORPHISM.name) ?: ThemeMode.GLASSMORPHISM.name
         return try {
             ThemeMode.valueOf(name)
         } catch (e: Exception) {
-            ThemeMode.DAY
+            ThemeMode.GLASSMORPHISM
         }
     }
 

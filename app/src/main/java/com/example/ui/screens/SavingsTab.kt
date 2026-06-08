@@ -388,6 +388,7 @@ fun SavingsTab(viewModel: FinanceViewModel) {
                 SavingsGoalCardItem(
                     goal = goal,
                     appLanguage = appLanguage,
+                    themeMode = themeMode,
                     onDeposit = { amt ->
                         viewModel.updateSavingsAmount(goal, amt)
                         Toast.makeText(context, if (isBn) "সঞ্চয় যুক্ত করা হয়েছে!" else "Savings deposited!", Toast.LENGTH_SHORT).show()
@@ -406,6 +407,7 @@ fun SavingsTab(viewModel: FinanceViewModel) {
     if (showGoalDialog) {
         AddSavingsGoalModal(
             appLanguage = appLanguage,
+            themeMode = themeMode,
             onDismiss = { showGoalDialog = false },
             onConfirm = { name, target, initial ->
                 viewModel.addSavingsGoal(name, target, initial)
@@ -417,7 +419,13 @@ fun SavingsTab(viewModel: FinanceViewModel) {
 }
 
 @Composable
-fun SavingsGoalCardItem(goal: SavingsGoal, appLanguage: AppLanguage, onDeposit: (Double) -> Unit, onDelete: () -> Unit) {
+fun SavingsGoalCardItem(
+    goal: SavingsGoal,
+    appLanguage: AppLanguage,
+    themeMode: ThemeMode,
+    onDeposit: (Double) -> Unit,
+    onDelete: () -> Unit
+) {
     val progress = if (goal.targetAmount <= 0) 0f else (goal.currentAmount / goal.targetAmount).toFloat().coerceIn(0f, 1f)
     val isBn = appLanguage == AppLanguage.BN
 
@@ -509,6 +517,7 @@ fun SavingsGoalCardItem(goal: SavingsGoal, appLanguage: AppLanguage, onDeposit: 
         DepositMoneyModal(
             goalTitle = goal.title,
             appLanguage = appLanguage,
+            themeMode = themeMode,
             onDismiss = { showDepositDialog = false },
             onSave = { amount ->
                 onDeposit(amount)
@@ -519,7 +528,12 @@ fun SavingsGoalCardItem(goal: SavingsGoal, appLanguage: AppLanguage, onDeposit: 
 }
 
 @Composable
-fun AddSavingsGoalModal(appLanguage: AppLanguage, onDismiss: () -> Unit, onConfirm: (String, Double, Double) -> Unit) {
+fun AddSavingsGoalModal(
+    appLanguage: AppLanguage,
+    themeMode: ThemeMode,
+    onDismiss: () -> Unit,
+    onConfirm: (String, Double, Double) -> Unit
+) {
     var title by remember { mutableStateOf("") }
     var targetStr by remember { mutableStateOf("") }
     var initialStr by remember { mutableStateOf("") }
@@ -527,6 +541,7 @@ fun AddSavingsGoalModal(appLanguage: AppLanguage, onDismiss: () -> Unit, onConfi
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = if (themeMode == ThemeMode.GLASSMORPHISM) Color(0xFF1F1B3D) else MaterialTheme.colorScheme.surface,
         title = { Text(if (isBn) "নতুন সঞ্চয় লক্ষ্য যোগ করুন" else "Create New Savings Target", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -569,12 +584,19 @@ fun AddSavingsGoalModal(appLanguage: AppLanguage, onDismiss: () -> Unit, onConfi
 }
 
 @Composable
-fun DepositMoneyModal(goalTitle: String, appLanguage: AppLanguage, onDismiss: () -> Unit, onSave: (Double) -> Unit) {
+fun DepositMoneyModal(
+    goalTitle: String,
+    appLanguage: AppLanguage,
+    themeMode: ThemeMode,
+    onDismiss: () -> Unit,
+    onSave: (Double) -> Unit
+) {
     var amountStr by remember { mutableStateOf("") }
     val isBn = appLanguage == AppLanguage.BN
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = if (themeMode == ThemeMode.GLASSMORPHISM) Color(0xFF1F1B3D) else MaterialTheme.colorScheme.surface,
         title = { Text(if (isBn) "সঞ্চয় যুক্ত করুন: $goalTitle" else "Deposit to: $goalTitle", fontSize = 15.sp, fontWeight = FontWeight.Bold) },
         text = {
             OutlinedTextField(

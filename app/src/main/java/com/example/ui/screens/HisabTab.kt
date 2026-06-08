@@ -376,6 +376,7 @@ fun HisabTab(viewModel: FinanceViewModel) {
         EditTransactionDialog(
             transaction = transactionToEdit!!,
             appLanguage = appLanguage,
+            themeMode = themeMode,
             onDismiss = { transactionToEdit = null },
             onSave = { updated ->
                 viewModel.updateTransaction(updated)
@@ -523,6 +524,7 @@ fun LocalHisabRowItem(
 fun EditTransactionDialog(
     transaction: Transaction,
     appLanguage: AppLanguage,
+    themeMode: ThemeMode,
     onDismiss: () -> Unit,
     onSave: (Transaction) -> Unit
 ) {
@@ -541,6 +543,7 @@ fun EditTransactionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = if (themeMode == ThemeMode.GLASSMORPHISM) Color(0xFF1F1B3D) else MaterialTheme.colorScheme.surface,
         title = {
             Text(
                 text = if (isBn) "ভুল সংশোধন ও সম্পাদনা" else "Edit Ledger Entry",

@@ -44,7 +44,7 @@ private val GlassmorphismColorScheme = darkColorScheme(
 
 @Composable
 fun AmarTakaTheme(
-    themeMode: ThemeMode = ThemeMode.DAY,
+    themeMode: ThemeMode = ThemeMode.GLASSMORPHISM,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (themeMode) {

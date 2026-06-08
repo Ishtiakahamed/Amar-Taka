@@ -640,6 +640,7 @@ fun ProfileTab(viewModel: FinanceViewModel) {
     if (showBudgetDialog) {
         AlertDialog(
             onDismissRequest = { showBudgetDialog = false },
+            containerColor = if (themeMode == ThemeMode.GLASSMORPHISM) Color(0xFF1F1B3D) else MaterialTheme.colorScheme.surface,
             title = { Text(if (isBn) "দৈনিক বাজেট সীমা পরিবর্তন" else "Change Daily Budget Limit", fontWeight = FontWeight.Bold) },
             text = {
                 OutlinedTextField(
@@ -674,6 +675,7 @@ fun ProfileTab(viewModel: FinanceViewModel) {
     if (showClearConfirm) {
         AlertDialog(
             onDismissRequest = { showClearConfirm = false },
+            containerColor = if (themeMode == ThemeMode.GLASSMORPHISM) Color(0xFF1F1B3D) else MaterialTheme.colorScheme.surface,
             title = { Text(if (isBn) "ডাটা মুছে ফেলতে চান?" else "Format Device Database?", color = ExpenseRed, fontWeight = FontWeight.Bold) },
             text = {
                 Text(
@@ -705,6 +707,7 @@ fun ProfileTab(viewModel: FinanceViewModel) {
     if (showLoanScreenInModal) {
         AlertDialog(
             onDismissRequest = { showLoanScreenInModal = false },
+            containerColor = if (themeMode == ThemeMode.GLASSMORPHISM) Color(0xFF1F1B3D) else MaterialTheme.colorScheme.surface,
             properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
             modifier = Modifier.fillMaxSize().padding(10.dp),
             title = {

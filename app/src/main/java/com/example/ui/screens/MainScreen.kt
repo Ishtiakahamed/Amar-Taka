@@ -170,6 +170,7 @@ fun GlobalQuickAddDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val themeMode by viewModel.themeMode.collectAsState()
     val savingsGoals by viewModel.savingsGoals.collectAsState()
     val isBn = appLanguage == AppLanguage.BN
 
@@ -184,6 +185,7 @@ fun GlobalQuickAddDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = if (themeMode == ThemeMode.GLASSMORPHISM) Color(0xFF1F1B3D) else MaterialTheme.colorScheme.surface,
         title = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1984,6 +1986,7 @@ fun SettingsScreen(viewModel: FinanceViewModel) {
                 SavingsGoalRowItem(
                     goal = goal,
                     appLanguage = appLanguage,
+                    themeMode = themeMode,
                     onDeposit = { amt ->
                         viewModel.updateSavingsAmount(goal, amt)
                     },
@@ -2000,6 +2003,7 @@ fun SettingsScreen(viewModel: FinanceViewModel) {
     if (showGoalDialog) {
         AddSavingsGoalDialog(
             appLanguage = appLanguage,
+            themeMode = themeMode,
             onDismiss = { showGoalDialog = false },
             onConfirm = { name, target, initial ->
                 viewModel.addSavingsGoal(name, target, initial)
@@ -2012,7 +2016,13 @@ fun SettingsScreen(viewModel: FinanceViewModel) {
 }
 
 @Composable
-fun SavingsGoalRowItem(goal: SavingsGoal, appLanguage: AppLanguage, onDeposit: (Double) -> Unit, onDelete: () -> Unit) {
+fun SavingsGoalRowItem(
+    goal: SavingsGoal,
+    appLanguage: AppLanguage,
+    themeMode: ThemeMode,
+    onDeposit: (Double) -> Unit,
+    onDelete: () -> Unit
+) {
     var showDepositDialog by remember { mutableStateOf(false) }
     val progress = if (goal.currentAmount <= 0) 0f else (goal.currentAmount / goal.targetAmount).toFloat().coerceIn(0f, 1f)
 
@@ -2083,6 +2093,7 @@ fun SavingsGoalRowItem(goal: SavingsGoal, appLanguage: AppLanguage, onDeposit: (
         DepositTakaDialog(
             goalTitle = goal.title,
             appLanguage = appLanguage,
+            themeMode = themeMode,
             onDismiss = { showDepositDialog = false },
             onSave = { amt ->
                 onDeposit(amt)
@@ -2093,13 +2104,19 @@ fun SavingsGoalRowItem(goal: SavingsGoal, appLanguage: AppLanguage, onDeposit: (
 }
 
 @Composable
-fun AddSavingsGoalDialog(appLanguage: AppLanguage, onDismiss: () -> Unit, onConfirm: (String, Double, Double) -> Unit) {
+fun AddSavingsGoalDialog(
+    appLanguage: AppLanguage,
+    themeMode: ThemeMode,
+    onDismiss: () -> Unit,
+    onConfirm: (String, Double, Double) -> Unit
+) {
     var name by remember { mutableStateOf("") }
     var target by remember { mutableStateOf("") }
     var initial by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = if (themeMode == ThemeMode.GLASSMORPHISM) Color(0xFF1F1B3D) else MaterialTheme.colorScheme.surface,
         title = { Text(if (appLanguage == AppLanguage.BN) "নতুন সঞ্চয় লক্ষ্য যোগ করুন" else "Add New Savings Goal", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -2150,11 +2167,18 @@ fun AddSavingsGoalDialog(appLanguage: AppLanguage, onDismiss: () -> Unit, onConf
 }
 
 @Composable
-fun DepositTakaDialog(goalTitle: String, appLanguage: AppLanguage, onDismiss: () -> Unit, onSave: (Double) -> Unit) {
+fun DepositTakaDialog(
+    goalTitle: String,
+    appLanguage: AppLanguage,
+    themeMode: ThemeMode,
+    onDismiss: () -> Unit,
+    onSave: (Double) -> Unit
+) {
     var amt by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = if (themeMode == ThemeMode.GLASSMORPHISM) Color(0xFF1F1B3D) else MaterialTheme.colorScheme.surface,
         title = { Text(if (appLanguage == AppLanguage.BN) "সঞ্চয় যুক্ত করুন - $goalTitle" else "Deposit Savings - $goalTitle", fontSize = 15.sp, fontWeight = FontWeight.Bold) },
         text = {
             OutlinedTextField(
