@@ -48,26 +48,26 @@ object StreakCalculator {
     fun getStreakMotivation(streak: Int, isEnglish: Boolean): String {
         return if (isEnglish) {
             when {
-                streak == 0 -> "Let's lock in your tracking habits! Add a transaction daily. 🚀"
-                streak == 1 -> "Great start! Day 1 complete. Keep it up! ✨"
-                streak in 2..3 -> "Awesome! You are tracking consistently. 🔋"
-                streak in 4..6 -> "Fabulous! You're building solid financial discipline! 🔥"
-                streak in 7..29 -> "7+ Days Streak! Exceptional commitment! 🏆"
-                else -> "$streak Days Money Discipline Unlocked! Superb! 👑"
+                streak == 0 -> "Begin your tracking habits by adding a transaction daily."
+                streak == 1 -> "Great start! Day 1 complete. Consistent tracking helps save money."
+                streak in 2..3 -> "Awesome! You are tracking consistently."
+                streak in 4..6 -> "Fabulous! You are building solid financial discipline."
+                streak in 7..29 -> "7+ Days Streak! Exceptional commitment to your budget."
+                else -> "$streak Days Money Discipline Unlocked! Superb."
             }
         } else {
             when (streak) {
-                0 -> "আজকের কোনো হিসাব যুক্ত করা হয়নি। চলুন অভ্যাসটি ধরে রাখি! 🚀"
-                1 -> "শুরুটা সুন্দর হয়েছে! হিসাব রাখা শুরু করুন। ✨"
-                3 -> "আপনি ভালোভাবে হিসাব রাখছেন! ৩ দিনের streak চলছে! 🔋"
-                7 -> "৭ দিনের হিসাব streak! দারুণ! অসাধারণ প্রতিশ্রুতি! 🔥"
-                30 -> "৩০ দিনের money discipline unlocked! অদম্য সংকল্প! 👑"
+                0 -> "আজকের কোনো হিসাব যুক্ত করা হয়নি। প্রতিদিন হিসাব রাখার অভ্যাসটি গড়ে তুলুন।"
+                1 -> "প্রথম দিনের হিসাব সংরক্ষণ সম্পন্ন হয়েছে। নিয়মিত ট্র্যাক পরিচালনা করুন।"
+                3 -> "আপনি ধারাবাহিকভাবে ৩ দিন যাবত হিসাব সংরক্ষণ করছেন।"
+                7 -> "দারুণ! টানা ৭ দিন নিখুঁতভাবে আর্থিক হিসাব সংরক্ষণ করেছেন।"
+                30 -> "টানা ৩০ দিন আর্থিক নিয়মানুবর্তিতা সফলভাবে বজায় রেখেছেন।"
                 else -> {
                     when {
-                        streak > 30 -> "$streak দিনের money discipline unlocked! আপনি একজন ফাইনান্স বস! 👑"
-                        streak >= 7 -> "$streak দিনের হিসাব streak চলছে! দারুণ গতি! 🔥"
-                        streak >= 3 -> "$streak দিনের হিসাব বজায় রেখেছেন! ভালো হচ্ছে! 🔋"
-                        else -> "$streak দিনের হিসাব streak চলছে। দুর্দান্ত! ✨"
+                        streak > 30 -> "টানা $streak দিন আর্থিক নিয়মানুবর্তিতা সফলভাবে বজায় রেখেছেন।"
+                        streak >= 7 -> "টানা $streak দিন আর্থিক হিসাব সংরক্ষণ করছেন। দারুণ গতি।"
+                        streak >= 3 -> "টানা $streak দিন আর্থিক হিসাব সফলভাবে বজায় রেখেছেন।"
+                        else -> "টানা $streak দিন আর্থিক হিসাব সংরক্ষণ চলছে।"
                     }
                 }
             }

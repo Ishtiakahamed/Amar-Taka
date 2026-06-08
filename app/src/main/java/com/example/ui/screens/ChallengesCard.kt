@@ -163,9 +163,9 @@ fun ChallengesCard(viewModel: FinanceViewModel) {
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         val streakText = if (appLanguage == AppLanguage.BN) {
-                            "আপনার $streakCount দিনের হিসাব streak চলছে 🔥"
+                            "আপনার $streakCount দিনের হিসাব প্রবাহ চালু আছে"
                         } else {
-                            "You are on a $streakCount-day tracking streak! 🔥"
+                            "You are on a $streakCount-day tracking streak"
                         }
                         Text(
                             text = streakText,

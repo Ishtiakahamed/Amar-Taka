@@ -255,21 +255,21 @@ fun DashboardTab(viewModel: FinanceViewModel) {
             }
         } else {
             list.add(
-                if (isBnLocal) "আজ কোনো বাড়তি খরচ হয়নি, আপনার ওয়ালেট হ্যাপী আছে! ✅"
-                else "No card expenses logged today. Your wallet is happy! ✅"
+                if (isBnLocal) "আজ বাড়তি ব্যয় নেই, আপনার ওয়ালেটের অবস্থা স্বাভাবিক আছে।"
+                else "No extra expenses logged today. Your wallet balance is stable."
             )
         }
 
         if (budgetLimit > 0.0) {
             if (thisMonthExpense > budgetLimit) {
                 list.add(
-                    if (isBnLocal) "এই মাসের বাজেট সীমা অতিক্রম হয়েছে ⚠️"
-                    else "Monthly budget limit tier exceeded! ⚠️"
+                    if (isBnLocal) "এই মাসের বাজেট সীমা অতিক্রম হয়েছে।"
+                    else "Monthly budget limit tier exceeded."
                 )
             } else {
                 list.add(
-                    if (isBnLocal) "আজকের বাজেট safe আছে ✅"
-                    else "Your active budget is safe & within limits! ✅"
+                    if (isBnLocal) "বাজেটের ভেতরে আছেন এবং অর্থ সুরক্ষিত রয়েছে।"
+                    else "Your active budget is safe and within limits."
                 )
             }
         }
@@ -279,20 +279,20 @@ fun DashboardTab(viewModel: FinanceViewModel) {
         val diff = yesterdayExpenseVal - todayExpense
         if (diff > 0 && todayExpense > 0) {
             list.add(
-                if (isBnLocal) "গতকালের চেয়ে আজ ৳${formatBDTWithLanguage(diff, appLanguage)} কম খরচ হয়েছে। 🎉"
-                else "Spent ৳${formatBDTWithLanguage(diff, appLanguage)} less than yesterday! 🎉"
+                if (isBnLocal) "গতকালের চেয়ে আজ ৳${formatBDTWithLanguage(diff, appLanguage)} কম ব্যয় হয়েছে।"
+                else "Spent ৳${formatBDTWithLanguage(diff, appLanguage)} less than yesterday."
             )
         } else if (diff < 0) {
             list.add(
-                if (isBnLocal) "গতকালের চেয়ে আজ ৳${formatBDTWithLanguage(-diff, appLanguage)} বেশি খরচ হয়েছে। ⚠️"
-                else "Spent ৳${formatBDTWithLanguage(-diff, appLanguage)} more than yesterday. ⚠️"
+                if (isBnLocal) "গতকালের চেয়ে আজ ৳${formatBDTWithLanguage(-diff, appLanguage)} বেশি ব্যয় হয়েছে।"
+                else "Spent ৳${formatBDTWithLanguage(-diff, appLanguage)} more than yesterday."
             )
         }
 
         if (thisMonthSavings > 0) {
             list.add(
-                if (isBnLocal) "আজ আপনি ৳${formatBDTWithLanguage(thisMonthSavings, appLanguage)} সঞ্চয় করেছেন 🔥"
-                else "You secured ৳${formatBDTWithLanguage(thisMonthSavings, appLanguage)} in savings today! 🔥"
+                if (isBnLocal) "আজ আপনি ৳${formatBDTWithLanguage(thisMonthSavings, appLanguage)} সফলভাবে সঞ্চয় করেছেন।"
+                else "You secured ৳${formatBDTWithLanguage(thisMonthSavings, appLanguage)} in savings today."
             )
         }
         list.take(3)
@@ -349,7 +349,12 @@ fun DashboardTab(viewModel: FinanceViewModel) {
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("💰", fontSize = 16.sp)
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
             }
@@ -372,15 +377,15 @@ fun DashboardTab(viewModel: FinanceViewModel) {
                 ) {
                     Text(
                         text = if (isBn) "মোট ব্যালেন্স" else "Total Balance",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White.copy(alpha = 0.6f)
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White.copy(alpha = 0.85f)
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "৳ ${formatBDTWithLanguage(totalBalance, appLanguage)}",
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.ExtraBold,
                         color = Color.White
                     )
 
@@ -487,10 +492,10 @@ fun DashboardTab(viewModel: FinanceViewModel) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    text = if (isBn) "ওয়ালেট ও একাউন্ট হিসাব" else "My Wallets & Accounts",
-                    fontSize = 12.sp,
+                    text = if (isBn) "ওয়ালেট ও অ্যাকাউন্ট ব্যালেন্স" else "My Wallets & Accounts",
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Gray
+                    color = Color.White
                 )
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -639,9 +644,9 @@ fun DashboardTab(viewModel: FinanceViewModel) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = if (isBn) "সারসংক্ষেপ ও কুঠুরি" else "Ledger Summary metrics",
+                    text = if (isBn) "আর্থিক সারসংক্ষেপ" else "Financial Summary",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium,
                     color = Color.White
                 )
 
@@ -752,9 +757,9 @@ fun DashboardTab(viewModel: FinanceViewModel) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = if (isBn) "কোন খাতে কত খরচ" else "Sector Wise Spends Breakdown",
+                    text = if (isBn) "খাতভিত্তিক ব্যয় সারাংশ" else "Sector-wise Spend Breakdown",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium,
                     color = Color.White
                 )
 
@@ -803,9 +808,9 @@ fun DashboardTab(viewModel: FinanceViewModel) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = if (isBn) "সাম্প্রতিক হিসাব" else "Recent Transactions",
+                    text = if (isBn) "সাম্প্রতিক লেনদেন" else "Recent Transactions",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium,
                     color = Color.White
                 )
 

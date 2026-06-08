@@ -130,9 +130,9 @@ fun MainScreen(viewModel: FinanceViewModel) {
                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = if (appLanguage == AppLanguage.BN) "+ হিসাব" else "+ Record",
+                    text = if (appLanguage == AppLanguage.BN) "দ্রুত হিসাব যোগ" else "Quick Register",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp
+                    fontSize = 14.sp
                 )
             }
         },
@@ -371,9 +371,9 @@ fun GlobalQuickAddDialog(
                 )
 
                 // Categories
-                Text(text = if (isBn) "খাত নির্বাচন করুন:" else "Category:", fontSize = 10.sp, color = Color.Gray)
+                Text(text = if (isBn) "খাত নির্বাচন করুন:" else "Category:", fontSize = 12.sp, color = Color.Gray)
                 val cats = when (quickType) {
-                    "EXPENSE" -> listOf("খাবার", "ভাড়া", "বাজার/শপিং", "পরিবহন", "চিকিৎসা", "বিনোদন", "বিল", "অন্যান্য")
+                    "EXPENSE" -> listOf("খাবার", "বাজার", "শপিং", "জামাকাপড়", "যাতায়াত", "মোবাইল রিচার্জ", "ইন্টারনেট বিল", "বিদ্যুৎ বিল", "বাসা ভাড়া", "পড়াশোনা", "চিকিৎসা", "ওষুধ", "পরিবার", "বন্ধু", "বিনোদন", "ব্যক্তিগত যত্ন", "দান", "ঋণ পরিশোধ", "অন্যান্য")
                     "INCOME" -> listOf("বেতন", "ব্যবসা", "ফ্রিল্যান্সিং", "উপহার", "অন্যান্য")
                     "SAVINGS" -> listOf("ভবিষ্যৎ সঞ্চয়", "জরুরী ফান্ড", "ডিপোজিট", "অন্যান্য")
                     "LOAN" -> listOf("বন্ধুবান্ধব", "পরিবার", "ব্যাংক লোন", "অন্যান্য")
@@ -444,7 +444,7 @@ fun GlobalQuickAddDialog(
                     }
 
                     onDismiss()
-                    Toast.makeText(context, if (isBn) "সফলভাবে রেকর্ড করা হয়েছে! 🎉" else "Saved successfully! 🎉", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, if (isBn) "সফলভাবে সংরক্ষণ করা হয়েছে" else "Saved successfully", Toast.LENGTH_SHORT).show()
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B5CF6))
             ) {
@@ -480,9 +480,9 @@ fun TrackerTab(viewModel: FinanceViewModel) {
 
     val isGlass = themeMode == ThemeMode.GLASSMORPHISM
 
-    val wallets = listOf("ক্যাশ", "বিকাশ", "রকেট", "নগদ", "ব্যাংক")
+    val wallets = listOf("ক্যাশ", "বিকাশ", "নগদ", "রকেট", "ব্যাংক")
     val incomeCategories = listOf("বেতন", "ব্যবসা", "ফ্রিল্যান্সিং", "উপহার", "অন্যান্য")
-    val expenseCategories = listOf("খাবার", "ভাড়া", "বাজার/শপিং", "পরিবহন", "চিকিৎসা", "বিনোদন", "বিল", "অন্যান্য")
+    val expenseCategories = listOf("খাবার", "বাজার", "শপিং", "জামাকাপড়", "যাতায়াত", "মোবাইল রিচার্জ", "ইন্টারনেট বিল", "বিদ্যুৎ বিল", "বাসা ভাড়া", "পড়াশোনা", "চিকিৎসা", "ওষুধ", "পরিবার", "বন্ধু", "বিনোদন", "ব্যক্তিগত যত্ন", "দান", "ঋণ পরিশোধ", "অন্যান্য")
 
     LaunchedEffect(txType) {
         selectedCategory = if (txType == "INCOME") "বেতন" else "অন্যান্য"
@@ -643,9 +643,10 @@ fun TrackerTab(viewModel: FinanceViewModel) {
 
                     // Select Wallet
                     Text(
-                        text = if (appLanguage == AppLanguage.BN) "হিসাব/ওয়ালেট নির্বাচন করুন:" else "Select Wallet:",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
+                        text = if (appLanguage == AppLanguage.BN) "ওয়ালেট নির্বাচন করুন:" else "Select Wallet:",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -674,9 +675,10 @@ fun TrackerTab(viewModel: FinanceViewModel) {
 
                     // Select Category
                     Text(
-                        text = if (appLanguage == AppLanguage.BN) "খরচ/আয়ের খাত বা শ্রেণী:" else "Select Category:",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium
+                        text = if (appLanguage == AppLanguage.BN) "আয় অথবা ব্যয়ের খাত:" else "Select Category:",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                     val categories = if (txType == "INCOME") incomeCategories else expenseCategories
                     FlowRowLayout(
@@ -731,26 +733,26 @@ fun TrackerTab(viewModel: FinanceViewModel) {
                             val feedbackMsg = if (txType == "EXPENSE") {
                                 if (appLanguage == AppLanguage.BN) {
                                     val items = listOf(
-                                        "খরচ যোগ হয়েছে ✅",
-                                        "আজ একটু সাবধানে খরচ করুন 😅",
-                                        "ভালো! হিসাব রাখা চালিয়ে যান 🔥",
-                                        "আজকের budget limit খেয়াল রাখুন!"
+                                        "খরচ সফলভাবে যুক্ত হয়েছে",
+                                        "নতুন খরচ সংরক্ষণ করা হয়েছে",
+                                        "খরচের হিসাব সফলভাবে নথিভুক্ত করা হয়েছে",
+                                        "বাজেট খরচ সফলভাবে আপডেট হয়েছে"
                                     )
                                     items.random()
                                 } else {
                                     val items = listOf(
-                                        "Expense added successfully! ✅",
-                                        "Spend a bit carefully today! 😅",
-                                        "Great! Keep tracking your spending. 🔥",
-                                        "Keep an eye on today's budget limit!"
+                                        "Expense successfully logged",
+                                        "New expense entry saved",
+                                        "Expense recorded to ledger",
+                                        "Budget limit balance updated"
                                     )
                                     items.random()
                                 }
                             } else {
                                 if (appLanguage == AppLanguage.BN) {
-                                    "আয় যুক্ত হয়েছে! চমৎকার! 💰"
+                                    "আয় সফলভাবে যুক্ত হয়েছে"
                                 } else {
-                                    "Income logged! Fantastic! 💰"
+                                    "Income logged successfully"
                                 }
                             }
                             Toast.makeText(context, feedbackMsg, Toast.LENGTH_SHORT).show()
@@ -1176,7 +1178,7 @@ fun TransactionRowItem(tx: Transaction, appLanguage: AppLanguage, onDelete: () -
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (tx.type == "INCOME") Icons.Default.ThumbUp else Icons.Default.ShoppingCart,
+                        imageVector = Localizer.getCategoryIcon(tx.category),
                         contentDescription = null,
                         tint = if (tx.type == "INCOME") IncomeGreen else ExpenseRed,
                         modifier = Modifier.size(18.dp)

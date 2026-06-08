@@ -86,16 +86,16 @@ fun SavingsTab(viewModel: FinanceViewModel) {
     // Daily motivation quote list
     val quote = remember(appLanguage) {
         val quotesBn = listOf(
-            "সঞ্চয় ছোট হলেও একদিন তা বড় বিপদে সাহায্য করে। 🌱",
-            "বাজেট হলো নিজের অর্থকে পরিচালনা করার মানচিত্র। 🗺️",
-            "অপ্রয়োজনীয় খরচ কমানো মানেই নিজের সঞ্চয় বাড়ানো! 🎯",
-            "আজকের ছোট ছোট ত্যাগ আগামীকালের আর্থিক স্বাধীনতার মূল চাবিকাঠি। 🔥"
+            "সঞ্চয় ছোট হলেও একদিন তা বড় বিপদে সাহায্য করে।",
+            "বাজেট হলো নিজের অর্থকে পরিচালনা করার মানচিত্র।",
+            "অপ্রয়োজনীয় খরচ কমানো মানেই নিজের সঞ্চয় বাড়ানো!",
+            "আজকের ছোট ছোট ত্যাগ আগামীকালের আর্থিক স্বাধীনতার মূল চাবিকাঠি।"
         )
         val quotesEn = listOf(
-            "A small saving today is an umbrella for a rainy day tomorrow. 🌱",
-            "A budget tells your money where to go, instead of wondering where it went. 🗺️",
-            "Cutting extra spend today paves the way for tomorrow's wealth! 🎯",
-            "Compound interest and constant practice creates miracles. 🔥"
+            "A small saving today is an umbrella for a rainy day tomorrow.",
+            "A budget tells your money where to go, instead of wondering where it went.",
+            "Cutting extra spend today paves the way for tomorrow's wealth!",
+            "Compound interest and constant practice creates miracles."
         )
         val dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) % 4
         if (appLanguage == AppLanguage.BN) quotesBn[dayOfWeek] else quotesEn[dayOfWeek]
@@ -152,7 +152,12 @@ fun SavingsTab(viewModel: FinanceViewModel) {
                             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("💡", fontSize = 16.sp)
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {

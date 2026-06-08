@@ -179,7 +179,7 @@ fun HisabTab(viewModel: FinanceViewModel) {
         }
 
         // --- SECTION B: DROPDOWN CRITERIA FILTERS ---
-        Text(text = if (isBn) "নিবিড় ফিল্টারিং ও সাজানো" else "Granular Refinement Filters", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+        Text(text = if (isBn) "ফিল্টারিং ও সাজানো" else "Filters & Sorting", fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
         
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -360,7 +360,7 @@ fun HisabTab(viewModel: FinanceViewModel) {
                                 note = tx.note + (if (isBn) " (কপি)" else " (Duplicate)"),
                                 date = System.currentTimeMillis()
                             )
-                            Toast.makeText(context, if (isBn) "রেকর্ড সফলভাবে ডুপ্লিকেট করা হয়েছে ✨" else "Transaction Duplicated! ✨", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, if (isBn) "হিসাব সফলভাবে অনুকরণ করা হয়েছে" else "Transaction duplicated successfully", Toast.LENGTH_SHORT).show()
                         },
                         onDelete = {
                             viewModel.deleteTransaction(tx)
@@ -427,13 +427,7 @@ fun LocalHisabRowItem(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        val iconVector = when (tx.type) {
-                            "INCOME" -> Icons.Default.Add
-                            "EXPENSE" -> Icons.Default.Delete
-                            "SAVINGS" -> Icons.Default.Star
-                            "TRANSFER" -> Icons.Default.Refresh
-                            else -> Icons.Default.AccountBox
-                        }
+                        val iconVector = if (tx.type == "TRANSFER") Icons.Default.Refresh else Localizer.getCategoryIcon(tx.category)
                         Icon(
                             imageVector = iconVector,
                             contentDescription = null,
@@ -444,6 +438,40 @@ fun LocalHisabRowItem(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Clear Type badge
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(
+                                        when (tx.type) {
+                                            "INCOME" -> incColor.copy(alpha = 0.15f)
+                                            "EXPENSE" -> expColor.copy(alpha = 0.15f)
+                                            "SAVINGS" -> Color(0xFF38BDF8).copy(alpha = 0.15f)
+                                            else -> Color(0xFFC084FC).copy(alpha = 0.15f)
+                                        }
+                                    )
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = when (tx.type) {
+                                        "INCOME" -> if (appLanguage == AppLanguage.BN) "আয়" else "Income"
+                                        "EXPENSE" -> if (appLanguage == AppLanguage.BN) "ব্যয়" else "Expense"
+                                        "SAVINGS" -> if (appLanguage == AppLanguage.BN) "সঞ্চয়" else "Savings"
+                                        "LOAN" -> if (appLanguage == AppLanguage.BN) "ঋণ" else "Loan"
+                                        else -> if (appLanguage == AppLanguage.BN) "বদলি" else "Transfer"
+                                    },
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = when (tx.type) {
+                                        "INCOME" -> incColor
+                                        "EXPENSE" -> expColor
+                                        "SAVINGS" -> Color(0xFF38BDF8)
+                                        else -> Color(0xFFC084FC)
+                                    }
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(6.dp))
+
                             Text(
                                 text = if (tx.type == "TRANSFER") {
                                     if (appLanguage == AppLanguage.BN) "স্থানান্তর" else "Transfer"
@@ -536,7 +564,7 @@ fun EditTransactionDialog(
     
     val wallets = listOf("ক্যাশ", "বিকাশ", "নগদ", "রকেট", "ব্যাংক", "সঞ্চয়")
     val incomeCategories = listOf("বেতন", "ব্যবসা", "ফ্রিল্যান্সিং", "উপহার", "অন্যান্য")
-    val expenseCategories = listOf("খাবার", "ভাড়া", "বাজার/শপিং", "পরিবহন", "চিকিৎসা", "বিনোদন", "বিল", "অন্যান্য")
+    val expenseCategories = listOf("খাবার", "বাজার", "শপিং", "জামাকাপড়", "যাতায়াত", "মোবাইল রিচার্জ", "ইন্টারনেট বিল", "বিদ্যুৎ বিল", "বাসা ভাড়া", "পড়াশোনা", "চিকিৎসা", "ওষুধ", "পরিবার", "বন্ধু", "বিনোদন", "ব্যক্তিগত যত্ন", "দান", "ঋণ পরিশোধ", "অন্যান্য")
     val savingsCategories = listOf("জরুরী ফান্ড", "ভবিষ্যৎ সঞ্চয়", "অন্যান্য")
     
     val isBn = appLanguage == AppLanguage.BN
@@ -616,7 +644,7 @@ fun EditTransactionDialog(
                 )
                 
                 // Account Wallet Account Source Selector
-                Text(if (isBn) "টাকার উৎস হিসাব:" else "Source Wallet:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text(if (isBn) "ওয়ালেট নির্বাচন করুন:" else "Select Wallet:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                 FlowRowLayout(spacing = 6.dp) {
                     wallets.take(5).forEach { w ->
                         val isSel = wallet == w
@@ -633,7 +661,7 @@ fun EditTransactionDialog(
                 }
                 
                 // Account Categories selection list
-                Text(if (isBn) "শ্রেণী খতিয়ান ট্যাগ:" else "Category Tag:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text(if (isBn) "খরচ/আয়ের খাত:" else "Select Category:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                 val cats = when (type) {
                     "INCOME" -> incomeCategories
                     "EXPENSE" -> expenseCategories
